@@ -1,0 +1,71 @@
+services:
+  thor:
+    container_name: thor
+    image: thor:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - SERVICE_NAME=thor
+    depends_on:
+      - nats
+    env_file:
+      - ./env/docker.local.env
+
+  vision:
+    container_name: vision
+    image: vision:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - SERVICE_NAME=vision
+    depends_on:
+      - nats
+    env_file:
+      - ./env/docker.local.env
+
+  nats:
+    container_name: nats
+    image: nats:latest
+    command: "--jetstream --config /etc/nats/nats-server.conf"
+    volumes:
+      - nats_volume:/data/nats
+      - ./nats.conf:/etc/nats/nats-server.conf:ro
+    ports:
+      - "4222:4222"
+
+  postgres:
+    container_name: db_postgres
+    image: postgres:16
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./env/docker.local.env
+
+  mongodb:
+    container_name: db_mongo
+    image: mongo:5
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    env_file:
+      - ./env/docker.local.env
+
+  redis:
+    container_name: redis
+    image: redis:7
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_volume:/data
+
+volumes:
+  nats_volume:
+  postgres_data:
+  mongodb_data:
+  redis_volume:
+
