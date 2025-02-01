@@ -5,13 +5,12 @@ import (
 	"runtime"
 
 	nats "github.com/nats-io/nats.go"
+	"lexyblazy.github.com/microservices-starter/pkg/common"
 )
 
 type Broker struct {
 	nc *nats.Conn
 }
-
-type MessageHandler func(data []byte)
 
 func (b *Broker) Publish(topic string, message []byte) {
 	b.nc.Publish(topic, message)
@@ -20,7 +19,7 @@ func (b *Broker) Publish(topic string, message []byte) {
 
 }
 
-func (b *Broker) Subscribe(topic string, handler MessageHandler) {
+func (b *Broker) Subscribe(topic string, handler common.MessageHandler) {
 	b.nc.Subscribe(topic, func(msg *nats.Msg) {
 		handler(msg.Data)
 	})
@@ -43,9 +42,11 @@ func New(natsUrl string) *Broker {
 
 	nc, err := nats.Connect(natsUrl)
 
-	if err != nil {
-		log.Fatal("Failed to connect nats")
-	}
+	common.LogFatalOnErr(err)
 
-	return &Broker{nc}
+	b := &Broker{nc}
+
+	go common.Teardown(b)
+
+	return b
 }
