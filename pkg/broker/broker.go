@@ -2,6 +2,7 @@ package broker
 
 import (
 	"log"
+	"os"
 	"runtime"
 
 	nats "github.com/nats-io/nats.go"
@@ -34,7 +35,9 @@ func (b *Broker) Close() {
 	b.nc.Close()
 }
 
-func New(natsUrl string) *Broker {
+func New() *Broker {
+
+	natsUrl := os.Getenv("NATS_URL")
 
 	if len(natsUrl) < 1 {
 		log.Fatal("NATS_URL cannot be empty string")

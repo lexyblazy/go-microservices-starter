@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -78,13 +79,15 @@ func (q *Queue) Close() {
 	q.nc.Close()
 }
 
-func New(natsUrl string) *Queue {
+func New() *Queue {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
+	natsUrl := os.Getenv("NATS_URL")
 
 	if len(natsUrl) < 1 {
 		log.Fatal("NATS_URL cannot be empty string")
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
 
 	nc, err := nats.Connect(natsUrl)
 	common.LogFatalOnErr(err)
