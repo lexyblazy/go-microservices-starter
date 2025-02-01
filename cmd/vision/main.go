@@ -1,6 +1,6 @@
 package main
 
-import(
+import (
 	vision "lexyblazy.github.com/microservices-starter/services/vision"
 )
 
