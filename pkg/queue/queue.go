@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
@@ -15,7 +14,6 @@ type Queue struct {
 	nc            *nats.Conn
 	js            jetstream.JetStream
 	ctx           context.Context
-	ctxCancel     context.CancelFunc
 	unsubConsumer func()
 }
 
@@ -70,7 +68,6 @@ func (q *Queue) Publish(topic string, message []byte) {
 }
 
 func (q *Queue) Close() {
-	q.ctxCancel()
 
 	if q.unsubConsumer != nil {
 		q.unsubConsumer()
@@ -87,7 +84,7 @@ func New() *Queue {
 		log.Fatal("NATS_URL cannot be empty string")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
+	ctx := context.Background()
 
 	nc, err := nats.Connect(natsUrl)
 	common.LogFatalOnErr(err)
@@ -97,7 +94,9 @@ func New() *Queue {
 	common.LogFatalOnErr(err)
 
 	q := &Queue{
-		nc: nc, js: js, ctx: ctx, ctxCancel: cancel,
+		nc:            nc,
+		js:            js,
+		ctx:           ctx,
 		unsubConsumer: nil,
 	}
 
